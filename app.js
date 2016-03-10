@@ -26,13 +26,33 @@ app.use(bodyParser.json());
 app.use(logIncoming);
 
 
+var MongoClient = require('mongodb').MongoClient;
+var url = 'mongodb://localhost:27017/books_inventory_db';
+
 app.post('/stock', function (req, res) {
-    res.json({isbn: req.body.isbn, count: req.body.count});
+    var isbn = req.body.isbn;
+    var count = req.body.count;
+
+    MongoClient.connect(url, function (err, db) {
+        console.log("Connected correctly to server");
+
+        db.collection('books').
+            updateOne({isbn: isbn}, {
+                isbn: isbn,
+                count: count
+            }, {upsert: true});
+    });
+    res.json({isbn: isbn, count: count});
 });
 
-app.get('/', function (req, res) {
-    throw new Error("'database migration', fancy word for downtime");
-    res.send("Do Gangnam, not Kanban");
+app.get('/stock', function (req, res) {
+    MongoClient.connect(url, function (err, db) {
+        return db.collection('books').
+            find({}).
+            toArray(function (err, docs) {
+                res.json(docs);
+            });
+    });
 });
 
 app.use(clientError);
