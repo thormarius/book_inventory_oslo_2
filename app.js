@@ -1,8 +1,6 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 
-var stockRepository = require('./mongoStockRepository');
-
 var logIncoming = function (req, res, next) {
     console.log('incoming request at ' + new Date());
     next();
