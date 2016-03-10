@@ -36,7 +36,7 @@ var collectionPromise = MongoClient.
         return db.collection('books');
     });
 
-app.post('/stock', function (req, res) {
+app.post('/stock', function (req, res, next) {
     var isbn = req.body.isbn;
     var count = req.body.count;
 
@@ -46,12 +46,13 @@ app.post('/stock', function (req, res) {
                 isbn: isbn,
                 count: count
             }, {upsert: true});
-        });
+        }).
+        catch(next);
 
     res.json({isbn: isbn, count: count});
 });
 
-app.get('/stock', function (req, res) {
+app.get('/stock', function (req, res, next) {
     collectionPromise.
         then(function (collection) {
             return collection.
@@ -60,7 +61,8 @@ app.get('/stock', function (req, res) {
         }).
         then(function (docs) {
             res.json(docs);
-        });
+        }).
+        catch(next);
 });
 
 app.use(clientError);
