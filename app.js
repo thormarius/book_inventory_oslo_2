@@ -1,6 +1,7 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
+var stockRepository = require('./mongoStockRepository');
 
 var logIncoming = function (req, res, next) {
     console.log('incoming request at ' + new Date());
@@ -25,40 +26,19 @@ function serverError(err, req, res, next) {
 app.use(bodyParser.json());
 app.use(logIncoming);
 
-
-var MongoClient = require('mongodb').MongoClient;
-var url = 'mongodb://localhost:27017/books_inventory_db';
-
-var collection = null;
-var collectionPromise = MongoClient.
-    connect(url).
-    then(function (db) {
-        return db.collection('books');
-    });
-
 app.post('/stock', function (req, res, next) {
     var isbn = req.body.isbn;
     var count = req.body.count;
 
-    collectionPromise.
-        then(function (collection) {
-            collection.updateOne({isbn: isbn}, {
-                isbn: isbn,
-                count: count
-            }, {upsert: true});
-        }).
+    stockRepository.
+        stockUp(isbn, count).
         catch(next);
 
     res.json({isbn: isbn, count: count});
 });
 
 app.get('/stock', function (req, res, next) {
-    collectionPromise.
-        then(function (collection) {
-            return collection.
-                find({}).
-                toArray();
-        }).
+    stockRepository.findAll().
         then(function (docs) {
             res.json(docs);
         }).
