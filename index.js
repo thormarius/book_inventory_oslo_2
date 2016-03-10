@@ -1,4 +1,5 @@
 var express = require('express');
+var bodyParser = require('body-parser');
 var app = express();
 
 var logIncoming = function (req, res, next) {
@@ -21,7 +22,13 @@ function serverError(err, req, res, next) {
     });
 }
 
+app.use(bodyParser.json());
 app.use(logIncoming);
+
+
+app.post('/stock', function (req, res) {
+    res.json({isbn: req.body.isbn, count: req.body.count});
+});
 
 app.get('/', function (req, res) {
     throw new Error("'database migration', fancy word for downtime");
