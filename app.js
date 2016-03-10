@@ -30,26 +30,35 @@ var MongoClient = require('mongodb').MongoClient;
 var url = 'mongodb://localhost:27017/books_inventory_db';
 
 var collection = null;
-MongoClient.connect(url, function (err, db) {
-    collection = db.collection('books');
-});
+var collectionPromise = MongoClient.
+    connect(url).
+    then(function (db) {
+        return db.collection('books');
+    });
 
 app.post('/stock', function (req, res) {
     var isbn = req.body.isbn;
     var count = req.body.count;
 
-    collection.
-        updateOne({isbn: isbn}, {
-            isbn: isbn,
-            count: count
-        }, {upsert: true});
+    collectionPromise.
+        then(function (collection) {
+            collection.updateOne({isbn: isbn}, {
+                isbn: isbn,
+                count: count
+            }, {upsert: true});
+        });
+
     res.json({isbn: isbn, count: count});
 });
 
 app.get('/stock', function (req, res) {
-    collection.
-    find({}).
-        toArray(function (err, docs) {
+    collectionPromise.
+        then(function (collection) {
+            return collection.
+                find({}).
+                toArray();
+        }).
+        then(function (docs) {
             res.json(docs);
         });
 });
