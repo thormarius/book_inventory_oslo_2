@@ -25,5 +25,15 @@ module.exports = {
                     find({}).
                     toArray();
             });
+    },
+    getCount: function (isbn) {
+        return collectionPromise.then(function (collection) {
+            return collection.find({"isbn": isbn}).limit(1).next();
+        }).then(function (result) {
+            if (result) {
+                return result.count;
+            }
+            return null;
+        });
     }
 };

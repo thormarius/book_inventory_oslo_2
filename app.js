@@ -45,6 +45,17 @@ app.get('/stock', function (req, res, next) {
         catch(next);
 });
 
+app.get('/stock/:isbn', function (req, res) {
+    stockRepository.getCount(req.params.isbn).then(function (result) {
+        if (result !== null) {
+            res.status(200).json({count: result});
+        } else {
+            res.status(404).json({error: 'No book with ISBN: ' + req.params.isbn});
+        }
+        res.json({});
+    });
+});
+
 app.use(clientError);
 app.use(serverError);
 
