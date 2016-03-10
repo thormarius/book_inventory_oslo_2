@@ -1,6 +1,6 @@
 var express = require('express');
 var bodyParser = require('body-parser');
-var app = express();
+
 var stockRepository = require('./mongoStockRepository');
 
 var logIncoming = function (req, res, next) {
@@ -23,41 +23,43 @@ function serverError(err, req, res, next) {
     });
 }
 
-app.use(bodyParser.json());
-app.use(logIncoming);
+module.exports = function(stockRepository) {
+    var app = express();
 
-app.post('/stock', function (req, res, next) {
-    var isbn = req.body.isbn;
-    var count = req.body.count;
+    app.use(bodyParser.json());
+    app.use(logIncoming);
 
-    stockRepository.
-        stockUp(isbn, count).
-        catch(next);
+    app.post('/stock', function (req, res, next) {
+        var isbn = req.body.isbn;
+        var count = req.body.count;
 
-    res.json({isbn: isbn, count: count});
-});
+        stockRepository.
+            stockUp(isbn, count).
+            catch(next);
 
-app.get('/stock', function (req, res, next) {
-    stockRepository.findAll().
-        then(function (docs) {
-            res.json(docs);
-        }).
-        catch(next);
-});
-
-app.get('/stock/:isbn', function (req, res) {
-    stockRepository.getCount(req.params.isbn).then(function (result) {
-        if (result !== null) {
-            res.status(200).json({count: result});
-        } else {
-            res.status(404).json({error: 'No book with ISBN: ' + req.params.isbn});
-        }
-        res.json({});
+        res.json({isbn: isbn, count: count});
     });
-});
 
-app.use(clientError);
-app.use(serverError);
+    app.get('/stock', function (req, res, next) {
+        stockRepository.findAll().
+            then(function (docs) {
+                res.json(docs);
+            }).
+            catch(next);
+    });
 
+    app.get('/stock/:isbn', function (req, res) {
+        stockRepository.getCount(req.params.isbn).then(function (result) {
+            if (result !== null) {
+                res.status(200).json({count: result});
+            } else {
+                res.status(404).json({error: 'No book with ISBN: ' + req.params.isbn});
+            }
+        });
+    });
 
-module.exports = app;
+    app.use(clientError);
+    app.use(serverError);
+
+    return app;
+};
