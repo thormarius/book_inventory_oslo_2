@@ -18,4 +18,4 @@ module.exports = {
             error: (process.env.NODE_ENV === 'production') ? {} : err.stack
         });
     }
-}
+};
