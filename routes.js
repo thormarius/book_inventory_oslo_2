@@ -14,6 +14,7 @@ module.exports = function (stockRepository) {
         findAll: function (req, res, next) {
             stockRepository.findAll().
                 then(function (docs) {
+                    console.log("Retrieving all books - thor marius")
                     res.json(docs);
                 }).
                 catch(next);
@@ -21,6 +22,8 @@ module.exports = function (stockRepository) {
         getCount: function (req, res) {
             stockRepository.getCount(req.params.isbn).then(function (result) {
                 if (result !== null) {
+                    console.log("Retrieving count " + result + " - thor marius")
+
                     res.status(200).json({count: result});
                 } else {
                     res.status(404).json({error: 'No book with ISBN: ' + req.params.isbn});
